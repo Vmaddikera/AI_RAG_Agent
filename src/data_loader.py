@@ -25,7 +25,7 @@ def load_all_documents(data_dir: str = None) -> List[Any]:
     Collection name is derived from the JSON file name.
     """
     documents = []
-
+    
     # Use the configured JSON file path
     json_file = os.path.abspath(JSON_FILE_PATH)
     
@@ -39,11 +39,17 @@ def load_all_documents(data_dir: str = None) -> List[Any]:
     print(f"[INFO] Collection name will be: {collection_name}")
     
     try:
+        # Use json.load() for better memory efficiency with large files
         with open(json_file, 'r', encoding='utf-8') as f:
-            content = f.read()
-            # Try to fix common JSON issues (trailing commas)
-            content = re.sub(r',(\s*[}\]])', r'\1', content)
-            data = json.loads(content)
+            # For large files, parse directly without reading entire file
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                # If JSON is invalid, try to fix trailing commas
+                f.seek(0)
+                content = f.read()
+                content = re.sub(r',(\s*[}\]])', r'\1', content)
+                data = json.loads(content)
         
         # Handle different JSON structures
         if isinstance(data, list):
@@ -79,11 +85,23 @@ def _process_array_format(data: List[dict], collection_name: str) -> List[Docume
         if not isinstance(item, dict):
             continue
         
-        # Build document text from all fields
+        # Build document text from all fields - prioritize important fields
         doc_text_parts = []
         
-        # Add all fields to the document text for better searchability
+        # Important fields first (for better search relevance)
+        priority_fields = ['name', 'content', 'what_you_learn', 'skills', 'category']
+        
+        # Add priority fields first
+        for key in priority_fields:
+            if key in item and item[key]:
+                value = item[key]
+                if isinstance(value, str) and value.strip():
+                    doc_text_parts.append(f"{key}: {value}")
+        
+        # Add remaining fields
         for key, value in item.items():
+            if key in priority_fields:  # Skip already added fields
+                continue
             if value is None or value == "":
                 continue
             
@@ -92,19 +110,26 @@ def _process_array_format(data: List[dict], collection_name: str) -> List[Docume
                 if value:
                     doc_text_parts.append(f"{key}: {', '.join(str(v) for v in value)}")
             elif isinstance(value, dict):
-                # Handle nested objects
-                doc_text_parts.append(f"{key}: {json.dumps(value)}")
+                # Handle nested objects - simplify for search
+                doc_text_parts.append(f"{key}: {str(value)}")
             else:
                 doc_text_parts.append(f"{key}: {value}")
         
         doc_text = "\n".join(doc_text_parts)
         
-        # Create metadata with all fields
+        # Create metadata with essential fields only (to reduce size)
         metadata = {
             "source": collection_name,
             "index": idx,
-            **{k: str(v) if not isinstance(v, (dict, list)) else json.dumps(v) for k, v in item.items()}
         }
+        
+        # Add key fields to metadata
+        if 'name' in item:
+            metadata['name'] = str(item['name'])
+        if 'category' in item:
+            metadata['category'] = str(item['category'])
+        if 'url' in item:
+            metadata['url'] = str(item['url'])
         
         doc = Document(page_content=doc_text, metadata=metadata)
         documents.append(doc)
