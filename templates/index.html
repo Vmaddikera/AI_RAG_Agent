@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourseBuddy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h1>Course Assistant</h1>
+                </div>
+                <p class="tagline">Coursera Courses Guide!</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Question Form -->
+            <section class="form-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-question-circle"></i> Ask Your Question</h2>
+                    </div>
+                    
+                    <form id="questionForm" class="form">
+                        <div class="form-group">
+                            <label for="question">
+                                <i class="fas fa-comment-dots"></i> Your Question
+                            </label>
+                            <textarea 
+                                id="question" 
+                                name="question" 
+                                rows="4" 
+                                required 
+                                placeholder="e.g., What courses are available for cybersecurity? Tell me about network security courses. What skills will I learn?"
+                            ></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Ask Question
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-comments"></i> Answer</h2>
+                        <button class="close-btn" id="closeResults"><i class="fas fa-times"></i></button>
+                    </div>
+                    
+                    <!-- Question Asked -->
+                    <div class="question-asked" id="questionAsked"></div>
+
+                    <!-- Loading State -->
+                    <div class="loading" id="loadingState">
+                        <div class="spinner"></div>
+                        <p>Getting answer from Course Assistant...</p>
+                        <small>This may take a few seconds</small>
+                    </div>
+
+                    <!-- Answer Output -->
+                    <div class="analysis-output" id="answerOutput"></div>
+
+                    <!-- Error State -->
+                    <div class="error-state" id="errorState" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p id="errorMessage"></p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; Course Assistant. Ask questions and get information about courses.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
