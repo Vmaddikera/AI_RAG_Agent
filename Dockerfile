@@ -13,9 +13,11 @@ COPY requirements.txt .
 
 # Install torch CPU-only first to avoid CUDA dependencies (saves ~3GB)
 # This prevents sentence-transformers from pulling in CUDA-enabled torch
+# Also upgrade opentelemetry early to fix Python 3.12 compatibility
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir --user --index-url https://download.pytorch.org/whl/cpu torch torchvision torchaudio && \
-    pip install --no-cache-dir --user -r requirements.txt
+    pip install --no-cache-dir --user -r requirements.txt && \
+    pip install --no-cache-dir --user --upgrade 'opentelemetry-api>=1.28.0' 'opentelemetry-sdk>=1.28.0'
 
 # Final stage - minimal runtime image
 FROM python:3.12-slim
@@ -34,17 +36,19 @@ ENV PATH=/root/.local/bin:$PATH
 # Copy application code
 COPY . .
 
-# Clean up Python cache, tests, docs, and unnecessary files to reduce image size
+# Clean up Python cache and unnecessary files to reduce image size
+# Note: Don't remove .dist-info as it breaks package metadata
 RUN find /root/.local -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true && \
     find /root/.local -type f -name "*.pyc" -delete && \
     find /root/.local -type f -name "*.pyo" -delete && \
     find /root/.local -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true && \
     find /root/.local -type d -name "test" -exec rm -rf {} + 2>/dev/null || true && \
-    find /root/.local -type d -name "*.dist-info" -exec rm -rf {} + 2>/dev/null || true && \
-    find /root/.local -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true && \
     find /root/.local -type d -name "docs" -exec rm -rf {} + 2>/dev/null || true && \
     find /root/.local -type d -name "doc" -exec rm -rf {} + 2>/dev/null || true && \
     rm -rf /root/.cache/pip 2>/dev/null || true
+
+# Disable ChromaDB OpenTelemetry to avoid Python 3.12 compatibility issues
+ENV CHROMA_OTEL_GRANULARITY=none
 
 # Expose port
 EXPOSE 8000

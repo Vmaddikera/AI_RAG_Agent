@@ -20,3 +20,7 @@ lxml
 html5lib
 flask
 gunicorn
+# Fix opentelemetry compatibility with Python 3.12
+# These versions fix the StopIteration error in Python 3.12
+opentelemetry-api>=1.28.0
+opentelemetry-sdk>=1.28.0

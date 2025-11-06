@@ -1,6 +1,9 @@
 """
 Flask web application for RAG Agent
 """
+# Apply opentelemetry patch BEFORE importing anything that uses chromadb
+import src.opentelemetry_patch  # noqa: F401
+
 from flask import Flask, render_template, request, jsonify
 from src.search import RAGSearch
 from src.data_loader import get_collection_name_from_file, JSON_FILE_PATH
