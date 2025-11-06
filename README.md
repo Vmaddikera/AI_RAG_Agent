@@ -4,24 +4,20 @@ A powerful Retrieval-Augmented Generation (RAG) application built with Flask tha
 
 ![Interface](Interface.png)
 
-## 🚀 Features
+##  Features
 
 - **Natural Language Querying**: Ask questions in plain English and get comprehensive answers
 - **RAG Architecture**: Combines vector search with LLM generation for accurate, context-aware responses
-- **Beautiful Web Interface**: Modern, responsive UI with a clean design
-- **Conversational Responses**: Answers are formatted in natural paragraphs (like ChatGPT) for better readability
-- **Lazy Loading**: Memory-optimized initialization that loads the RAG system only when needed
-- **Flexible Data Source**: Works with any JSON file structure - automatically adapts to your data format
 - **Vector Search**: Uses ChromaDB for efficient similarity search over document embeddings
 - **Fast LLM**: Powered by Groq's Llama 3.1 8B model for quick response times
 
-## 📋 Prerequisites
+##  Prerequisites
 
 - Python 3.12 or higher
 - Groq API key (get one at [console.groq.com](https://console.groq.com))
 - At least 4GB RAM (8GB recommended for large datasets)
 
-## 🛠️ Installation
+##  Installation
 
 1. **Clone the repository**
    ```bash
@@ -54,12 +50,12 @@ A powerful Retrieval-Augmented Generation (RAG) application built with Flask tha
 
 5. **Prepare your data**
    
-   Place your JSON file in the root directory (default: `courses_en.json`). The application will automatically:
+   Place your JSON file in the root directory. The application will automatically:
    - Detect the file structure (array or object)
    - Extract relevant text fields
    - Create embeddings and build the vector database
 
-## 🎯 Usage
+##  Usage
 
 ### Running the Application
 
@@ -82,10 +78,7 @@ A powerful Retrieval-Augmented Generation (RAG) application built with Flask tha
 
 3. **Ask questions**
    
-   Simply type your question in the text area and click "Ask Question". The system will:
-   - Search for relevant information in your documents
-   - Generate a natural, conversational answer
-   - Display the response in an easy-to-read format
+   Simply type your question in the text area and click "Ask Question". 
 
 ### Example Queries
 
@@ -94,7 +87,7 @@ A powerful Retrieval-Augmented Generation (RAG) application built with Flask tha
 - "What skills will I learn in the programming course?"
 - "Which courses are suitable for beginners?"
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 RAG_Agent/
@@ -116,7 +109,7 @@ RAG_Agent/
 └── chroma_db/              # Vector database (auto-generated)
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Changing the Data Source
 
@@ -149,63 +142,15 @@ In `src/search.py`, modify the embedding model:
 RAGSearch(embedding_model="all-mpnet-base-v2")  # Larger, more accurate
 ```
 
-## 🌐 API Endpoints
 
-### `POST /api/query`
-Submit a question and get an answer.
 
-**Request:**
-```json
-{
-  "question": "What courses are available?"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "question": "What courses are available?",
-  "answer": "Based on the provided context..."
-}
-```
-
-### `GET /health`
-Health check endpoint (doesn't require RAG initialization).
-
-### `GET /ready`
-Readiness check (verifies RAG agent is initialized).
-
-### `GET /debug`
-Debug information about the system status.
-
-## 🏗️ Architecture
-
-### RAG Pipeline
-
-1. **Data Loading**: JSON files are loaded and parsed into document chunks
-2. **Embedding**: Text chunks are converted to vectors using HuggingFace embeddings
-3. **Vector Storage**: Embeddings are stored in ChromaDB for fast similarity search
-4. **Query Processing**: 
-   - User question is embedded
-   - Similar documents are retrieved from the vector store
-   - Retrieved context is passed to the LLM
-5. **Answer Generation**: LLM generates a natural language answer based on the context
-
-### Key Components
-
-- **ChromaVectorStore**: Manages vector embeddings and similarity search
-- **RAGSearch**: Orchestrates the search and generation pipeline
-- **Data Loader**: Handles JSON parsing and document creation
-- **Flask App**: Provides the web interface and API endpoints
-
-## 🎨 Features in Detail
+##  Features in Detail
 
 ### Natural Paragraph Formatting
 The application is configured to provide answers in natural, flowing paragraphs rather than structured blocks or bullet points, making it feel more conversational and easier to read.
 
 ### Memory Optimization
-- Lazy initialization: RAG system loads only when first query is received
+- First-Ask Initialization: RAG system loads only when first query is received
 - Efficient embedding model: Uses lightweight `all-MiniLM-L6-v2` model
 - Memory cleanup: Automatic garbage collection and CUDA cache clearing
 
@@ -215,34 +160,4 @@ The data loader automatically detects:
 - Object-based JSON structures
 - Nested fields and extracts relevant text content
 
-## 🐛 Troubleshooting
 
-### "No relevant documents found"
-- Ensure your JSON file is in the correct location
-- Check that the vector database was built successfully (check `chroma_db/` directory)
-- Verify your JSON structure is supported
-
-### Memory Errors
-- Reduce `chunk_size` in `vectorstore.py`
-- Use a smaller embedding model
-- Ensure you have at least 4GB free RAM
-
-### API Key Issues
-- Verify your `.env` file contains `GROQ_API_KEY`
-- Check that the API key is valid and has credits
-
-## 📝 License
-
-See [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📧 Support
-
-For issues and questions, please open an issue on the repository.
-
----
-
-**Built with ❤️ using Flask, LangChain, ChromaDB, and Groq**
