@@ -14,15 +14,23 @@ app = Flask(__name__)
 # Get collection name from JSON file name automatically
 collection_name = get_collection_name_from_file(JSON_FILE_PATH)
 
-# Initialize RAG search
-print("[INFO] Initializing RAG Agent...")
-print(f"[INFO] Using JSON file: {JSON_FILE_PATH}")
-print(f"[INFO] Collection name: {collection_name}")
-rag_search = RAGSearch(
-    collection_name=collection_name,
-    data_loader_module="src.data_loader"
-)
-print("[INFO] RAG Agent ready!")
+# Lazy initialization of RAG search to reduce memory usage at startup
+# This will be initialized on first request
+rag_search = None
+
+def get_rag_search():
+    """Lazy initialization of RAG search"""
+    global rag_search
+    if rag_search is None:
+        print("[INFO] Initializing RAG Agent (lazy load)...")
+        print(f"[INFO] Using JSON file: {JSON_FILE_PATH}")
+        print(f"[INFO] Collection name: {collection_name}")
+        rag_search = RAGSearch(
+            collection_name=collection_name,
+            data_loader_module="src.data_loader"
+        )
+        print("[INFO] RAG Agent ready!")
+    return rag_search
 
 @app.route('/')
 def index():
@@ -44,8 +52,11 @@ def query():
         
         print(f"[INFO] Received query: {question}")
         
+        # Get RAG search instance (lazy initialization)
+        rag = get_rag_search()
+        
         # Get answer from RAG agent (top_k=1 for focused results)
-        answer = rag_search.search_and_summarize(question, top_k=1)
+        answer = rag.search_and_summarize(question, top_k=1)
         
         return jsonify({
             'success': True,
@@ -66,6 +77,15 @@ def query():
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy'})
+
+@app.route('/ready')
+def ready():
+    """Readiness check - verifies RAG agent is initialized"""
+    try:
+        rag = get_rag_search()
+        return jsonify({'status': 'ready', 'rag_initialized': rag is not None})
+    except Exception as e:
+        return jsonify({'status': 'not ready', 'error': str(e)}), 503
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

@@ -53,6 +53,7 @@ ENV CHROMA_OTEL_GRANULARITY=none
 # Expose port
 EXPOSE 8000
 
-# Run gunicorn
-CMD ["gunicorn", "app_prod:app", "--bind", "0.0.0.0:8000", "--workers", "2", "--threads", "2", "--timeout", "120"]
+# Run gunicorn with 1 worker to reduce memory usage
+# Each worker loads the embedding model (~200-400MB), so 1 worker is safer
+CMD ["gunicorn", "app_prod:app", "--bind", "0.0.0.0:8000", "--workers", "1", "--threads", "4", "--timeout", "120"]
 
