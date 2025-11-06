@@ -50,7 +50,6 @@ chroma_db/
 *.sqlite3
 
 # Large data files (exclude from git if too large)
-# courses_en.json - Keep this in git for Railway deployment
 # Uncomment the line below if the JSON file is too large:
 # courses_en.json
 
@@ -66,8 +65,6 @@ logs/
 Thumbs.db
 .DS_Store
 
-# Railway
-.railway/
 
 # Temporary files
 *.tmp

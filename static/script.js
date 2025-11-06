@@ -79,28 +79,27 @@ questionForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Display answer with proper formatting
+// Display answer with natural paragraph formatting
 function displayAnswer(answerText) {
     let html = '<div class="answer-container">';
     
     // Split into lines for processing
     const lines = answerText.split('\n');
     
-    let currentSection = '';
     let inCodeBlock = false;
+    let currentParagraph = '';
     
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
         const trimmedLine = line.trim();
         
-        // Skip empty lines
-        if (!trimmedLine && !inCodeBlock) {
-            continue;
-        }
-        
         // Handle code blocks
         if (trimmedLine.startsWith('```')) {
             inCodeBlock = !inCodeBlock;
+            if (currentParagraph) {
+                html += `<p class="answer-paragraph">${formatText(currentParagraph)}</p>`;
+                currentParagraph = '';
+            }
             continue;
         }
         
@@ -109,63 +108,26 @@ function displayAnswer(answerText) {
             continue;
         }
         
-        // Detect section headers
-        if (trimmedLine.match(/^#{1,3}\s+/) || (trimmedLine.length > 0 && trimmedLine.length < 50 && trimmedLine.match(/^[A-Z][A-Z\s]+$/))) {
-            // Close previous section
-            if (currentSection) {
-                html += '</div>';
+        // If line is empty, end current paragraph
+        if (!trimmedLine) {
+            if (currentParagraph) {
+                html += `<p class="answer-paragraph">${formatText(currentParagraph)}</p>`;
+                currentParagraph = '';
             }
-            
-            // Create new section
-            const headerText = trimmedLine.replace(/^#{1,3}\s+/, '').replace(/^\*\*|\*\*$/g, '');
-            currentSection = headerText;
-            
-            const level = trimmedLine.match(/^#+/)?.[0]?.length || 2;
-            html += `<div class="answer-section">
-                <h${Math.min(level, 3)} class="section-header">
-                    ${formatText(headerText)}
-                </h${Math.min(level, 3)}>
-                <div class="section-content">`;
             continue;
         }
         
-        // Lists
-        if (trimmedLine.match(/^[-*•]\s+/) || trimmedLine.match(/^\d+\.\s+/)) {
-            if (!currentSection) {
-                html += '<div class="answer-section"><div class="section-content">';
-                currentSection = 'content';
-            }
-            
-            const listItem = trimmedLine.replace(/^[-*•\d.\s]+/, '');
-            const icon = '<i class="fas fa-circle"></i>';
-            html += `<div class="list-item">${icon} ${formatText(listItem)}</div>`;
-            continue;
-        }
-        
-        // Bold text (markdown style)
-        if (trimmedLine.includes('**')) {
-            if (!currentSection) {
-                html += '<div class="answer-section"><div class="section-content">';
-                currentSection = 'content';
-            }
-            html += `<p class="answer-paragraph bold-text">${formatText(trimmedLine)}</p>`;
-            continue;
-        }
-        
-        // Regular paragraphs
-        if (trimmedLine.length > 0) {
-            if (!currentSection) {
-                html += '<div class="answer-section"><div class="section-content">';
-                currentSection = 'content';
-            }
-            
-            html += `<p class="answer-paragraph">${formatText(trimmedLine)}</p>`;
+        // Build paragraphs naturally - combine lines until we hit a double newline or empty line
+        if (currentParagraph) {
+            currentParagraph += ' ' + trimmedLine;
+        } else {
+            currentParagraph = trimmedLine;
         }
     }
     
-    // Close last section
-    if (currentSection) {
-        html += '</div></div>';
+    // Add any remaining paragraph
+    if (currentParagraph) {
+        html += `<p class="answer-paragraph">${formatText(currentParagraph)}</p>`;
     }
     
     html += '</div>';

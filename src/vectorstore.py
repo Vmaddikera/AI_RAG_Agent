@@ -108,10 +108,4 @@ class ChromaVectorStore:
             print(f"[ERROR] Query failed: {e}")
             return []
 
-# Example usage
-if __name__ == "__main__":
-    from src.data_loader_ipl import load_all_documents
-    docs = load_all_documents()
-    store = ChromaVectorStore("chroma_db")
-    store.build_from_documents(docs)
-    print(store.query("Knight card", top_k=3))
+

@@ -57,19 +57,16 @@ Context Data:
 
 Instructions:
 1. Extract ALL relevant information from the context to answer the question
-2. Provide a clear, detailed answer with specific details from the context
-3. If comparing items, provide information for ALL items mentioned
-4. Be specific and accurate - only use information from the provided context
-5. If the context doesn't contain enough information to answer the question, say so
+2. Provide a clear, detailed answer in natural, conversational paragraphs (like ChatGPT)
+3. Write in flowing paragraphs, not bullet points or structured blocks
+4. Use natural transitions between sentences and ideas
+5. Be specific and accurate - only use information from the provided context
+6. If comparing items, provide information for ALL items mentioned in a natural narrative style
+7. If the context doesn't contain enough information to answer the question, say so
 
-Answer:"""
+Answer in natural paragraphs:"""
         
         response = self.llm.invoke([prompt])
         return response.content
 
 # Example usage
-if __name__ == "__main__":
-    rag_search = RAGSearch()
-    query = "Tell me about Virat Kohli, Highet score in all Ipl Matches BEST sCORE"
-    summary = rag_search.search_and_summarize(query, top_k=3)
-    print("Summary:", summary)
