@@ -50,6 +50,11 @@ RUN find /root/.local -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || 
 # Disable ChromaDB OpenTelemetry to avoid Python 3.12 compatibility issues
 ENV CHROMA_OTEL_GRANULARITY=none
 
+# Set memory-efficient environment variables
+ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
+ENV OMP_NUM_THREADS=1
+ENV MKL_NUM_THREADS=1
+
 # Expose port
 EXPOSE 8000
 

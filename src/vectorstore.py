@@ -35,12 +35,20 @@ class ChromaVectorStore:
         self.chunk_overlap = chunk_overlap
         self.collection_name = collection_name
         
-        # Initialize embeddings
+        # Initialize embeddings with memory optimizations
+        # all-MiniLM-L6-v2 is already the smallest model (~80MB)
+        # Using CPU device and ensuring efficient loading
         self.embeddings = HuggingFaceEmbeddings(
             model_name=embedding_model,
-            model_kwargs={'device': 'cpu'}
+            model_kwargs={
+                'device': 'cpu'
+            },
+            encode_kwargs={
+                'normalize_embeddings': True,  # Normalize for better performance
+                'batch_size': 32  # Smaller batch size to reduce memory spikes
+            }
         )
-        print(f"[INFO] Loaded embedding model: {embedding_model}")
+        print(f"[INFO] Loaded embedding model: {embedding_model} (CPU, optimized)")
         
         # Initialize ChromaDB
         self.vectorstore = None

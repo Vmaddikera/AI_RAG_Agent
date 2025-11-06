@@ -12,30 +12,63 @@ import os
 app = Flask(__name__)
 
 # Get collection name from JSON file name automatically
-collection_name = get_collection_name_from_file(JSON_FILE_PATH)
+# Wrap in try-except to prevent app crash on startup
+try:
+    collection_name = get_collection_name_from_file(JSON_FILE_PATH)
+    print(f"[INFO] Collection name determined: {collection_name}")
+except Exception as e:
+    print(f"[WARNING] Failed to get collection name: {e}")
+    collection_name = "rag_documents"  # Default fallback
 
 # Lazy initialization of RAG search to reduce memory usage at startup
 # This will be initialized on first request
 rag_search = None
+rag_error = None
 
 def get_rag_search():
-    """Lazy initialization of RAG search"""
-    global rag_search
-    if rag_search is None:
-        print("[INFO] Initializing RAG Agent (lazy load)...")
-        print(f"[INFO] Using JSON file: {JSON_FILE_PATH}")
-        print(f"[INFO] Collection name: {collection_name}")
-        rag_search = RAGSearch(
-            collection_name=collection_name,
-            data_loader_module="src.data_loader"
-        )
-        print("[INFO] RAG Agent ready!")
+    """Lazy initialization of RAG search with memory optimizations"""
+    global rag_search, rag_error
+    if rag_search is None and rag_error is None:
+        try:
+            import gc
+            import torch
+            
+            print("[INFO] Initializing RAG Agent (lazy load)...")
+            print(f"[INFO] Using JSON file: {JSON_FILE_PATH}")
+            print(f"[INFO] Collection name: {collection_name}")
+            
+            # Clear any cached memory before loading model
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            
+            rag_search = RAGSearch(
+                collection_name=collection_name,
+                data_loader_module="src.data_loader"
+            )
+            
+            # Clear memory after initialization
+            gc.collect()
+            
+            print("[INFO] RAG Agent ready!")
+        except Exception as e:
+            print(f"[ERROR] Failed to initialize RAG Agent: {e}")
+            import traceback
+            traceback.print_exc()
+            rag_error = str(e)
+            raise
+    elif rag_error:
+        raise Exception(f"RAG Agent initialization failed: {rag_error}")
     return rag_search
 
 @app.route('/')
 def index():
     """Render the main page"""
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        print(f"[ERROR] Failed to render index: {e}")
+        return f"Error loading page: {str(e)}", 500
 
 @app.route('/api/query', methods=['POST'])
 def query():
@@ -75,8 +108,12 @@ def query():
 
 @app.route('/health')
 def health():
-    """Health check endpoint"""
-    return jsonify({'status': 'healthy'})
+    """Health check endpoint - doesn't require RAG initialization"""
+    return jsonify({
+        'status': 'healthy',
+        'app': 'running',
+        'rag_initialized': rag_search is not None
+    })
 
 @app.route('/ready')
 def ready():
